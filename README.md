@@ -48,6 +48,14 @@ Use `--profile "/path/to/Chrome/Profile"` for non-default Chrome profiles. The i
 node dist/mcp.js
 ```
 
+Claude Code one-line setup:
+
+```bash
+claude mcp add kicktipp -- npx -y --package github:rabitem/kicktipp-mcp kicktipp-mcp
+```
+
+This installs and runs the MCP server from the public GitHub repo. It requires Node.js 22 or newer.
+
 Example Claude Desktop-style config:
 
 ```json
