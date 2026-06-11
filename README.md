@@ -66,7 +66,17 @@ This uses the same GitHub-backed package install as Claude Code.
 
 ### Claude Desktop
 
-Claude Desktop's quick-install path for local MCP servers is an `.mcpb` Desktop Extension bundle. This repo can support that distribution path, including a bundle icon, once a release artifact is published. Until then, use a local config entry:
+Claude Desktop's quick-install path for local MCP servers is an `.mcpb` Desktop Extension bundle with an install dialog and bundle icon.
+
+Build the bundle locally:
+
+```bash
+npm run mcpb:pack
+```
+
+Then open `release/kicktipp-mcp-v<version>.mcpb` with Claude Desktop.
+
+Release builds attach the `.mcpb` bundle and SHA-256 checksum to [GitHub Releases](https://github.com/rabitem/kicktipp-mcp/releases). If you prefer manual local config, run:
 
 ```bash
 node dist/mcp.js
