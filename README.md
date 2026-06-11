@@ -34,6 +34,14 @@ KICKTIPP_KEYCHAIN_HOST=www.kicktipp.de
 
 Use `KICKTIPP_EMAIL`/`KICKTIPP_PASSWORD`, `KICKTIPP_LOGIN_COOKIE`, or macOS Keychain for account-specific tools. Public tools only need a community slug.
 
+If Kicktipp is already logged in through Chrome on macOS, import the encrypted Chrome cookies into the local MCP session file:
+
+```bash
+node dist/ktipp.js import-chrome-session
+```
+
+Use `--profile "/path/to/Chrome/Profile"` for non-default Chrome profiles. The import reads only Kicktipp cookies and writes the configured session file with `0600` permissions.
+
 ## MCP
 
 ```bash
@@ -88,6 +96,7 @@ Risk profiles: `conservative`, `balanced`, `aggressive`, `chasing`, `leading`.
 ```bash
 npm run build
 node dist/ktipp.js status
+node dist/ktipp.js import-chrome-session
 node dist/ktipp.js schedule bundesliga-tippspiel --json
 node dist/ktipp.js research bundesliga-tippspiel --matchday 1 --json
 node dist/ktipp.js council bundesliga-tippspiel --risk balanced --json

@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 import { parseArgs } from 'node:util';
+import { importChromeKicktippSession } from '../auth/chrome-session.js';
 import { loadConfig, requireCommunity } from '../config.js';
 import { KicktippClient } from '../core/kicktipp-client.js';
 import type { RiskProfile, SubmitTipInput } from '../domain/types.js';
@@ -12,6 +13,7 @@ async function main(): Promise<void> {
       matchday: { type: 'string', short: 'd' },
       risk: { type: 'string' },
       scores: { type: 'string' },
+      profile: { type: 'string' },
       yes: { type: 'boolean', default: false },
       override: { type: 'boolean', default: false },
       json: { type: 'boolean', default: false },
@@ -35,6 +37,11 @@ async function main(): Promise<void> {
   switch (command) {
     case 'status':
       result = await client.status();
+      break;
+    case 'import-chrome-session':
+      result = await importChromeKicktippSession(config, {
+        ...(values.profile ? { profilePath: values.profile } : {}),
+      });
       break;
     case 'communities':
       result = await client.listCommunities();
@@ -132,6 +139,7 @@ function helpText(): string {
 
 Commands:
   status                         Show auth/config status
+  import-chrome-session          Import Kicktipp cookies from Chrome on macOS
   communities                    List authenticated account communities
   schedule [community]           Public fixtures/results
   standings [community]          Public league table
@@ -148,6 +156,7 @@ Options:
   -d, --matchday <n>              Kicktipp spieltagIndex
       --risk <profile>           conservative|balanced|aggressive|chasing|leading
       --scores <pairs>           formIndex=H:A[,formIndex=H:A]
+      --profile <path>           Chrome profile path for import-chrome-session
       --yes                      Real submit. Default submit is dry-run.
       --override                 Replace existing tips during submit
       --json                     JSON output

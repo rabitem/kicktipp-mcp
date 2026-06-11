@@ -42,39 +42,93 @@ async function readGenericPassword(
   config: KicktippConfig,
   runner: SecurityCommandRunner,
 ): Promise<KicktippCredentials | null> {
-  const account = config.keychain.account ?? (await findAccount(['find-generic-password', '-s', config.keychain.service], runner));
-  if (!account) return null;
+  for (const service of unique([
+    config.keychain.service,
+    'kicktipp',
+    config.keychain.host,
+    normalizedDomain(config.keychain.host),
+    `https://${config.keychain.host}`,
+  ])) {
+    const credentials = await readPasswordItem(
+      {
+        account: config.keychain.account,
+        argsForAccount: ['find-generic-password', '-s', service],
+        argsForPassword: (account) => ['find-generic-password', '-s', service, '-a', account, '-w'],
+        source: 'macos-keychain-generic',
+      },
+      runner,
+    );
+    if (credentials) return credentials;
+  }
 
-  const password = await findPassword(
-    ['find-generic-password', '-s', config.keychain.service, '-a', account, '-w'],
-    runner,
-  );
-  if (!password) return null;
+  for (const label of unique(['kicktipp', 'Kicktipp', config.keychain.host, normalizedDomain(config.keychain.host)])) {
+    const credentials = await readPasswordItem(
+      {
+        account: config.keychain.account,
+        argsForAccount: ['find-generic-password', '-l', label],
+        argsForPassword: (account) => ['find-generic-password', '-l', label, '-a', account, '-w'],
+        source: 'macos-keychain-generic',
+      },
+      runner,
+    );
+    if (credentials) return credentials;
+  }
 
-  return {
-    email: account,
-    password,
-    source: 'macos-keychain-generic',
-  };
+  return null;
 }
 
 async function readInternetPassword(
   config: KicktippConfig,
   runner: SecurityCommandRunner,
 ): Promise<KicktippCredentials | null> {
-  const account = config.keychain.account ?? (await findAccount(['find-internet-password', '-s', config.keychain.host], runner));
+  for (const host of unique([config.keychain.host, normalizedDomain(config.keychain.host), `www.${normalizedDomain(config.keychain.host)}`])) {
+    const credentials = await readPasswordItem(
+      {
+        account: config.keychain.account,
+        argsForAccount: ['find-internet-password', '-s', host],
+        argsForPassword: (account) => ['find-internet-password', '-s', host, '-a', account, '-w'],
+        source: 'macos-keychain-internet',
+      },
+      runner,
+    );
+    if (credentials) return credentials;
+  }
+
+  for (const label of unique(['kicktipp', 'Kicktipp', config.keychain.host, normalizedDomain(config.keychain.host)])) {
+    const credentials = await readPasswordItem(
+      {
+        account: config.keychain.account,
+        argsForAccount: ['find-internet-password', '-l', label],
+        argsForPassword: (account) => ['find-internet-password', '-l', label, '-a', account, '-w'],
+        source: 'macos-keychain-internet',
+      },
+      runner,
+    );
+    if (credentials) return credentials;
+  }
+
+  return null;
+}
+
+async function readPasswordItem(
+  options: {
+    account: string | null;
+    argsForAccount: string[];
+    argsForPassword: (account: string) => string[];
+    source: CredentialSource;
+  },
+  runner: SecurityCommandRunner,
+): Promise<KicktippCredentials | null> {
+  const account = options.account ?? (await findAccount(options.argsForAccount, runner));
   if (!account) return null;
 
-  const password = await findPassword(
-    ['find-internet-password', '-s', config.keychain.host, '-a', account, '-w'],
-    runner,
-  );
+  const password = await findPassword(options.argsForPassword(account), runner);
   if (!password) return null;
 
   return {
     email: account,
     password,
-    source: 'macos-keychain-internet',
+    source: options.source,
   };
 }
 
@@ -88,6 +142,14 @@ async function findPassword(args: string[], runner: SecurityCommandRunner): Prom
   const output = await runSecurity(args, runner);
   const password = output?.trim();
   return password || null;
+}
+
+function normalizedDomain(host: string): string {
+  return host.replace(/^www\./, '');
+}
+
+function unique(values: string[]): string[] {
+  return [...new Set(values.filter(Boolean))];
 }
 
 async function runSecurity(args: string[], runner: SecurityCommandRunner): Promise<string | null> {
