@@ -1,0 +1,114 @@
+# kicktipp-mcp
+
+TypeScript MCP server and CLI for [Kicktipp](https://www.kicktipp.de/): schedules, standings, scoring rules, visible Tippverteilung, explainable tip research, agent councils, odds-based predictions, and dry-run-first tip submission.
+
+## Design Goals
+
+- Direct HTTP core by default; no browser dependency for normal reads/submits.
+- Public read tools work without credentials where Kicktipp exposes the page.
+- Credentialed operations use environment variables or a saved session cookie file, not tool arguments.
+- `submit_tips` is gated twice: `dryRun` defaults to `true`, and real writes require `confirmation="SUBMIT_TIPS"`.
+- Form indexes are treated separately from Kicktipp `tippspielId` match IDs.
+- Agent councils return evidence, assumptions, and uncertainty with recommendations.
+
+## Setup
+
+```bash
+npm install
+npm run build
+```
+
+Optional `.env` values:
+
+```bash
+KICKTIPP_BASE_URL=https://www.kicktipp.de
+KICKTIPP_EMAIL=you@example.com
+KICKTIPP_PASSWORD=secret
+KICKTIPP_LOGIN_COOKIE=
+KICKTIPP_DEFAULT_COMMUNITY=bundesliga-tippspiel
+KICKTIPP_KEYCHAIN=true
+KICKTIPP_KEYCHAIN_SERVICE=kicktipp
+KICKTIPP_KEYCHAIN_ACCOUNT=
+KICKTIPP_KEYCHAIN_HOST=www.kicktipp.de
+```
+
+Use `KICKTIPP_EMAIL`/`KICKTIPP_PASSWORD`, `KICKTIPP_LOGIN_COOKIE`, or macOS Keychain for account-specific tools. Public tools only need a community slug.
+
+## MCP
+
+```bash
+node dist/mcp.js
+```
+
+Example Claude Desktop-style config:
+
+```json
+{
+  "mcpServers": {
+    "kicktipp": {
+      "command": "node",
+      "args": ["/Users/rabitem/Documents/kicktipp-mcp/dist/mcp.js"],
+      "env": {
+        "KICKTIPP_DEFAULT_COMMUNITY": "bundesliga-tippspiel"
+      }
+    }
+  }
+}
+```
+
+## MCP Tools
+
+- `get_status`
+- `list_communities`
+- `get_schedule`
+- `get_standings`
+- `get_scoring_rules`
+- `get_tip_distribution`
+- `get_matchday_form`
+- `predict_from_odds`
+- `build_tip_research`
+- `run_tip_council`
+- `submit_tips`
+
+## Agent Councils
+
+`run_tip_council` runs these councils:
+
+- `market`: odds-derived expected-points scoreline.
+- `crowd`: visible Kicktipp Tippverteilung.
+- `table`: standings/rank/points context.
+- `rules`: scoring-rule incentives and dynamic point ranges.
+- `contrarian`: high-variance value when market probability exceeds crowd share.
+- `consensus`: weighted final recommendation.
+
+Risk profiles: `conservative`, `balanced`, `aggressive`, `chasing`, `leading`.
+
+## CLI
+
+```bash
+npm run build
+node dist/ktipp.js status
+node dist/ktipp.js schedule bundesliga-tippspiel --json
+node dist/ktipp.js research bundesliga-tippspiel --matchday 1 --json
+node dist/ktipp.js council bundesliga-tippspiel --risk balanced --json
+```
+
+Dry-run submit:
+
+```bash
+node dist/ktipp.js submit my-tipprunde --scores "0=2:1,1=1:1"
+```
+
+Real submit after reviewing the diff:
+
+```bash
+node dist/ktipp.js submit my-tipprunde --scores "0=2:1,1=1:1" --yes
+```
+
+## Development
+
+```bash
+npm run typecheck
+npm test
+npm run build
+```

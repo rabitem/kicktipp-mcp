@@ -1,0 +1,40 @@
+{
+  "name": "kicktipp-mcp",
+  "version": "0.1.0",
+  "description": "MCP server and CLI for Kicktipp schedules, standings, tip research, predictions, and dry-run-first tip submission.",
+  "type": "module",
+  "license": "MIT",
+  "bin": {
+    "kicktipp-mcp": "./dist/mcp.js",
+    "ktipp": "./dist/ktipp.js"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "build": "tsup src/bin/mcp.ts src/bin/ktipp.ts --format esm --dts --sourcemap --clean",
+    "dev:mcp": "tsx src/bin/mcp.ts",
+    "dev:cli": "tsx src/bin/ktipp.ts",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit",
+    "check": "npm run typecheck && npm test && npm run build"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.29.0",
+    "cheerio": "^1.2.0",
+    "tough-cookie": "^6.0.1",
+    "zod": "^4.4.3"
+  },
+  "devDependencies": {
+    "@types/node": "^24.0.0",
+    "tsup": "^8.5.1",
+    "tsx": "^4.20.6",
+    "typescript": "^5.9.3",
+    "vitest": "^4.0.15"
+  }
+}
