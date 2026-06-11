@@ -42,13 +42,13 @@ node dist/ktipp.js import-chrome-session
 
 Use `--profile "/path/to/Chrome/Profile"` for non-default Chrome profiles. The import reads only Kicktipp cookies and writes the configured session file with `0600` permissions.
 
-## MCP
+## Client Setup
 
-```bash
-node dist/mcp.js
-```
+[![Claude Code](https://img.shields.io/badge/Claude%20Code-stdio%20MCP-191919)](#claude-code)
+[![Codex](https://img.shields.io/badge/Codex-stdio%20MCP-111827)](#codex)
+[![Claude Desktop](https://img.shields.io/badge/Claude%20Desktop-MCPB%20bundle-191919)](#claude-desktop)
 
-Claude Code one-line setup:
+### Claude Code
 
 ```bash
 claude mcp add kicktipp -- npx -y --package github:rabitem/kicktipp-mcp kicktipp-mcp
@@ -56,7 +56,21 @@ claude mcp add kicktipp -- npx -y --package github:rabitem/kicktipp-mcp kicktipp
 
 This installs and runs the MCP server from the public GitHub repo. It requires Node.js 22 or newer.
 
-Example Claude Desktop-style config:
+### Codex
+
+```bash
+codex mcp add kicktipp -- npx -y --package github:rabitem/kicktipp-mcp kicktipp-mcp
+```
+
+This uses the same GitHub-backed package install as Claude Code.
+
+### Claude Desktop
+
+Claude Desktop's quick-install path for local MCP servers is an `.mcpb` Desktop Extension bundle. This repo can support that distribution path, including a bundle icon, once a release artifact is published. Until then, use a local config entry:
+
+```bash
+node dist/mcp.js
+```
 
 ```json
 {
