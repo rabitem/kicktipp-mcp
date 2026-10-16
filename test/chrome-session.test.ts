@@ -61,7 +61,11 @@ describe('Chrome session import', () => {
     );
 
     expect(result).toMatchObject({ imported: 2, rejected: 0, sessionFile });
-    expect((fs.statSync(sessionFile).mode & 0o777).toString(8)).toBe('600');
+    // Windows does not implement POSIX permission bits, even when the importer
+    // is exercised with mocked macOS commands. Keep checking them on POSIX hosts.
+    if (process.platform !== 'win32') {
+      expect((fs.statSync(sessionFile).mode & 0o777).toString(8)).toBe('600');
+    }
 
     const stored = JSON.parse(fs.readFileSync(sessionFile, 'utf8')) as { jar: unknown };
     const jar = CookieJar.fromJSON(stored.jar as never);
